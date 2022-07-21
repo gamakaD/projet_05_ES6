@@ -70,9 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let userItemKey
 
         if (userColor === "") {
-            alert('Vous devez selectionner une couleur')
+            toastNotif('Vous devez selectionner une couleur', 'red')
+            return
         } else if (userQuantity <= 0 || userQuantity > 100 || isNaN(userQuantity)) {
-            alert('Vous devez choisir une quantité comprise entre 1 et 100')
+            toastNotif('Vous devez choisir une quantité comprise entre 1 et 100', 'red')
+            return
         } else {
             userItemKey = urlId + "_" + userColor
 
@@ -83,15 +85,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 userStorageData.push(urlId, userColor, userQuantity)
                 localStorage.setItem(userItemKey, JSON.stringify(userStorageData))
 
-            } else if (localStorage.getItem(userItemKey)) {
+            } else {
                 let userStorageData = JSON.parse(localStorage.getItem(userItemKey))
                 let oldUserQuantity = userStorageData[2]
                 let newUserQuantity = oldUserQuantity + userQuantity
+                if (newUserQuantity > 100) {
+                    toastNotif('Vous ne pouvez pas commander plus de 100 articles du même modèle', 'red')
+                    return
+                }
                 userStorageData.splice(2, 1, newUserQuantity)
                 localStorage.setItem(userItemKey, JSON.stringify(userStorageData))
             }
         }
+        toastNotif(itemTitle.textContent + ' ' +  userColor + ' ajouté au panier', 'green')
         console.log(localStorage)
+    }
+
+    function toastNotif(notif, color) {
+        const toast = document.createElement('div')
+        let toastStyle = {
+            position: 'absolute',
+            display : 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '12px',
+            textAlign: 'center',
+            width: '100%',
+            padding: '12px',
+            backgroundColor: color,
+            borderRadius: '8px',
+        }
+        Object.assign(toast.style, toastStyle)
+        toast.textContent = notif 
+
+        const removeBtn = document.createElement('button')
+        removeBtn.style.width = '20%'
+        removeBtn.style.padding = '5px'
+        removeBtn.textContent = 'Ok'
+        toast.appendChild(removeBtn)
+
+        addToCartBtn.parentElement.style.position = 'relative'
+        addToCartBtn.parentElement.appendChild(toast)
+        removeBtn.onclick = () => addToCartBtn.parentElement.removeChild(toast)
     }
 })
 
